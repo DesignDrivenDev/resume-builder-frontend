@@ -7,6 +7,7 @@ const AdminPage = () => {
   const [users, setUsers] = useState([]);
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState("");
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -15,6 +16,7 @@ const AdminPage = () => {
         ? JSON.parse(userDataFromStorage)
         : null;
       setCurrentUser(userData?.name);
+      setUserRole(userData?.role);
     }
   }, []);
   console.log(currentUser, "currentUser");
@@ -30,9 +32,13 @@ const AdminPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:8080/delete-resume/${id}`);
-      // @ts-ignore
-      setUsers(users.filter((user) => user?._id !== id));
+      if (userRole === "admin") {
+        await axios.delete(`http://localhost:8080/delete-resume/${id}`);
+        // @ts-ignore
+        setUsers(users.filter((user) => user?._id !== id));
+      } else {
+        alert("You are not authorized to delete the resume");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -107,7 +113,13 @@ const AdminPage = () => {
                   <td className="flex justify-around p-1">
                     <button
                       className="px-2 py-1 border border-gray-400 text-xs rounded-md"
-                      onClick={() => router.push(`/admin/${user._id}`)}
+                      onClick={() => {
+                        if (userRole === "admin") {
+                          router.push(`/admin/${user._id}`);
+                        } else {
+                          alert("You are not authorized to edit the resume");
+                        }
+                      }}
                     >
                       Edit
                     </button>
